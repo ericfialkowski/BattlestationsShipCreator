@@ -9,11 +9,12 @@ import com.ericski.ui.FileChooserExtensionFileFilter;
 import com.ericski.ui.ImageIconScalable;
 import com.ericski.ui.InfiniteProgressPanel;
 import com.ericski.ui.JPopupTextArea;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Desktop;
-import java.awt.Dimension;
-import java.awt.HeadlessException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -25,32 +26,8 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Objects;
 import java.util.prefs.Preferences;
-import javax.imageio.ImageIO;
-import javax.swing.Box;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JDialog;
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.JToolBar;
-import javax.swing.KeyStroke;
-import javax.swing.SwingWorker;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class ShipCreatorFrame extends JFrame
 {
@@ -99,9 +76,7 @@ public class ShipCreatorFrame extends JFrame
 
 		contentPane.add(shipPanel, BorderLayout.CENTER);
 
-		// ImageIcon icon = new
-		// ImageIcon(getClass().getResource("/img/icon.gif"));
-		ImageIcon icon = new ImageIcon(getClass().getResource("/img/tentac_ship_icon.png"));
+		ImageIcon icon = new ImageIcon(Objects.requireNonNull(getClass().getResource("/img/tentac_ship_icon.png")));
 		setIconImage(icon.getImage());
 
 		glassPane = new InfiniteProgressPanel();
@@ -118,21 +93,21 @@ public class ShipCreatorFrame extends JFrame
 		JMenuItem newMenu = new JMenuItem("New");
 		newMenu.addActionListener(actionListener);
 		newMenu.setMnemonic('N');
-		newMenu.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, KeyEvent.CTRL_MASK));
+		newMenu.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, KeyEvent.CTRL_DOWN_MASK));
 		newMenu.setActionCommand(NEWACTION);
 		fileMenu.add(newMenu);
 
 		JMenuItem loadMenu = new JMenuItem("Open");
 		loadMenu.addActionListener(actionListener);
 		loadMenu.setMnemonic('o');
-		loadMenu.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, KeyEvent.CTRL_MASK));
+		loadMenu.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, KeyEvent.CTRL_DOWN_MASK));
 		loadMenu.setActionCommand(LOADACTION);
 		fileMenu.add(loadMenu);
 
 		JMenuItem saveMenu = new JMenuItem("Save");
 		saveMenu.addActionListener(actionListener);
 		saveMenu.setMnemonic('S');
-		saveMenu.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_MASK));
+		saveMenu.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_DOWN_MASK));
 		saveMenu.setActionCommand(SAVEACTION);
 		fileMenu.add(saveMenu);
 
@@ -141,7 +116,7 @@ public class ShipCreatorFrame extends JFrame
 			JMenuItem printMenu = new JMenuItem("Print");
 			printMenu.addActionListener(actionListener);
 			printMenu.setMnemonic('P');
-			printMenu.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, KeyEvent.CTRL_MASK));
+			printMenu.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, KeyEvent.CTRL_DOWN_MASK));
 			printMenu.setActionCommand(PRINTACTION);
 			fileMenu.add(printMenu);
 		}
@@ -151,7 +126,7 @@ public class ShipCreatorFrame extends JFrame
 			JMenuItem viewMenu = new JMenuItem("View in Reader");
 			viewMenu.addActionListener(actionListener);
 			viewMenu.setMnemonic('V');
-			viewMenu.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.CTRL_MASK));
+			viewMenu.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.CTRL_DOWN_MASK));
 			viewMenu.setActionCommand(VIEWACTION);
 			fileMenu.add(viewMenu);
 		}
@@ -159,7 +134,7 @@ public class ShipCreatorFrame extends JFrame
 		JMenuItem xmlViewMenu = new JMenuItem("View XML Code");
 		xmlViewMenu.addActionListener(actionListener);
 		xmlViewMenu.setActionCommand(XMLVIEWACTION);
-		xmlViewMenu.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F1, KeyEvent.CTRL_MASK));
+		xmlViewMenu.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F1, KeyEvent.CTRL_DOWN_MASK));
 		fileMenu.add(xmlViewMenu);
 
 		fileMenu.addSeparator();
@@ -167,14 +142,14 @@ public class ShipCreatorFrame extends JFrame
 		JMenuItem exportJPGMenu = new JMenuItem("Export as JPG");
 		exportJPGMenu.addActionListener(actionListener);
 		exportJPGMenu.setMnemonic('J');
-		exportJPGMenu.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_J, KeyEvent.CTRL_MASK));
+		exportJPGMenu.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_J, KeyEvent.CTRL_DOWN_MASK));
 		exportJPGMenu.setActionCommand(EXPORTJPGACTION);
 		fileMenu.add(exportJPGMenu);
 
 		JMenuItem exportPDFMenu = new JMenuItem("Export as PDF");
 		exportPDFMenu.addActionListener(actionListener);
 		exportPDFMenu.setMnemonic('D');
-		exportPDFMenu.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D, KeyEvent.CTRL_MASK));
+		exportPDFMenu.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D, KeyEvent.CTRL_DOWN_MASK));
 		exportPDFMenu.setActionCommand(EXPORTPDFACTION);
 		fileMenu.add(exportPDFMenu);
 
@@ -183,7 +158,7 @@ public class ShipCreatorFrame extends JFrame
 		JMenuItem exitMenu = new JMenuItem("Exit");
 		exitMenu.addActionListener(actionListener);
 		exitMenu.setMnemonic('x');
-		exitMenu.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F4, KeyEvent.ALT_MASK));
+		exitMenu.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F4, KeyEvent.ALT_DOWN_MASK));
 		exitMenu.setActionCommand(EXITACTION);
 		fileMenu.add(exitMenu);
 
@@ -206,19 +181,14 @@ public class ShipCreatorFrame extends JFrame
 		showToolBarMenu = new JCheckBoxMenuItem("Show Toolbar");
 		showToolBarMenu.setSelected(true);
 		showToolBarMenu.setMnemonic('t');
-		showToolBarMenu.addChangeListener(new ChangeListener()
-		{
-			@Override
-			public void stateChanged(ChangeEvent e)
+		showToolBarMenu.addChangeListener(e -> {
+			if (e.getSource() instanceof JCheckBoxMenuItem)
 			{
-				if (e.getSource() instanceof JCheckBoxMenuItem)
-				{
-					JCheckBoxMenuItem source = (JCheckBoxMenuItem) e.getSource();
-					boolean value = source.isSelected();
-					Preferences prefs = Preferences.userNodeForPackage(ShipCreatorFrame.class);
-					prefs.put(SHOW_TOOL_BAR_PREFS_KEY, Boolean.toString(value));
-					toolBar.setVisible(value);
-				}
+				JCheckBoxMenuItem source = (JCheckBoxMenuItem) e.getSource();
+				boolean value = source.isSelected();
+				Preferences prefs = Preferences.userNodeForPackage(ShipCreatorFrame.class);
+				prefs.put(SHOW_TOOL_BAR_PREFS_KEY, Boolean.toString(value));
+				toolBar.setVisible(value);
 			}
 		});
 		optionMenu.add(showToolBarMenu);
@@ -327,26 +297,21 @@ public class ShipCreatorFrame extends JFrame
 
 	public static void main(String[] args)
 	{
-		javax.swing.SwingUtilities.invokeLater(new Runnable()
-		{
-			@Override
-			public void run()
+		javax.swing.SwingUtilities.invokeLater(() -> {
+			JFrame.setDefaultLookAndFeelDecorated(true);
+			try
 			{
-				JFrame.setDefaultLookAndFeelDecorated(true);
-				try
-				{
-					// Set System L&F
-					UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-				}
-				catch (UnsupportedLookAndFeelException | ClassNotFoundException | InstantiationException | IllegalAccessException e)
-				{
-					// handle exception
-				}
-				ShipCreatorFrame frame = new ShipCreatorFrame();
-				frame.toFront();
-				frame.setVisible(true);
-				frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+				// Set System L&F
+				UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 			}
+			catch (UnsupportedLookAndFeelException | ClassNotFoundException | InstantiationException | IllegalAccessException e)
+			{
+				// handle exception
+			}
+			ShipCreatorFrame frame = new ShipCreatorFrame();
+			frame.toFront();
+			frame.setVisible(true);
+			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		});
 
 	}
@@ -669,7 +634,7 @@ class ViewShipTask extends SwingWorker<Void, Void>
 	}
 
 	@Override
-	protected Void doInBackground() throws Exception
+	protected Void doInBackground()
 	{
 		try
 		{
@@ -712,7 +677,7 @@ class PrintShipTask extends SwingWorker<Void, Void>
 	}
 
 	@Override
-	protected Void doInBackground() throws Exception
+	protected Void doInBackground()
 	{
 		try
 		{
@@ -755,7 +720,7 @@ class SaveShipTask extends SwingWorker<Void, Void>
 	}
 
 	@Override
-	protected Void doInBackground() throws Exception
+	protected Void doInBackground()
 	{
 		try
 		{
@@ -797,7 +762,7 @@ class LoadShipTask extends SwingWorker<Void, Void>
 	}
 
 	@Override
-	protected Void doInBackground() throws Exception
+	protected Void doInBackground()
 	{
 		try
 		{
@@ -847,7 +812,7 @@ class ExportJPGTask extends SwingWorker<Void, Void>
 	}
 
 	@Override
-	protected Void doInBackground() throws Exception
+	protected Void doInBackground()
 	{
 
 		try
@@ -889,7 +854,7 @@ class ExportLargeTask extends SwingWorker<Void, Void>
 	}
 
 	@Override
-	protected Void doInBackground() throws Exception
+	protected Void doInBackground()
 	{
 
 		try
@@ -935,7 +900,7 @@ class ExportPDFTask extends SwingWorker<Void, Void>
 	}
 
 	@Override
-	protected Void doInBackground() throws Exception
+	protected Void doInBackground()
 	{
 
 		try
@@ -969,14 +934,12 @@ class RawXmlDialog extends JDialog
 
 	private static final long serialVersionUID = 1L;
 
-	private final JTextArea xmlText;
-
 	public RawXmlDialog(String text, JFrame parent, String title, String msg)
 	{
 		super();
 		setTitle(title);
 		JPanel content = new JPanel(new BorderLayout());
-		xmlText = new JPopupTextArea(20, 40);
+		JTextArea xmlText = new JPopupTextArea(20, 40);
 		xmlText.setText(text);
 		JScrollPane scrollingArea = new JScrollPane(xmlText);
 		content.add(scrollingArea, BorderLayout.CENTER);
@@ -990,10 +953,5 @@ class RawXmlDialog extends JDialog
 		setResizable(false);
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
-	}
-
-	public void setText(String text)
-	{
-		xmlText.setText(text);
 	}
 }
