@@ -1,18 +1,22 @@
 package com.ericski.Battlestations;
 
-import java.awt.Image;
+import org.apache.logging.log4j.message.FormattedMessage;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlRootElement;
+import java.awt.*;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import static javax.imageio.ImageIO.read;
-import org.apache.logging.log4j.message.FormattedMessage;
-import org.jdom2.Document;
-import org.jdom2.Element;
-import org.jdom2.JDOMException;
-import org.jdom2.input.SAXBuilder;
 
+import static javax.imageio.ImageIO.read;
+
+@XmlRootElement(name = "Module")
+@XmlAccessorType(XmlAccessType.PROPERTY)
 public class CustomUserModule extends Module
 {
 	public CustomUserModule(String name, String description, String profession, String fileName)
@@ -66,25 +70,17 @@ public class CustomUserModule extends Module
 
 	public static CustomUserModule fromXml(File f)
 	{
-		SAXBuilder builder = new SAXBuilder();
-		try (FileReader reader = new FileReader(f))
-		{
-			String dir = f.getParent();
-			Document moduleDocument = builder.build(reader);
-			Element moduleElement = moduleDocument.detachRootElement();
-			Element nameElement = moduleElement.getChild("Name");
-			Element descElement = moduleElement.getChild("Description");
-			Element fileElement = moduleElement.getChild("File");
-			Element professionElement = moduleElement.getChild("Profession");
+		try {
+			JAXBContext jaxbContext = JAXBContext.newInstance(CustomUserModule.class);
+			Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
+			CustomUserModule m = (CustomUserModule)jaxbUnmarshaller.unmarshal(f);
 
-			CustomUserModule m = new CustomUserModule(nameElement.getTextNormalize(),
-													  descElement.getTextNormalize(),
-													  professionElement.getTextNormalize(),
-													  dir + "/" + fileElement.getTextNormalize());
+			String dir = f.getParent();
+			m.setFileName(dir + "/" + m.getFileName());
 
 			return m;
 		}
-		catch (JDOMException | IOException ex)
+		catch (Exception ex)
 		{
 			logger.warn("Couldn't load module", ex);
 			return null;
