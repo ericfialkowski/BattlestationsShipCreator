@@ -370,17 +370,7 @@ public class ShipCreatorFrame extends JFrame
 				case ABOUT:
 				{
 					String info = "Battlestations Ship Sheet Creator\n"
-									  + "Version: " + Version.INSTANCE.getVersion() + "\n"
-									  + "Built at: " + Version.INSTANCE.getBuildDate() + "\n"
 									  + "Contact: eric.fialkowski@gmail.com";
-					if (Version.INSTANCE.isUptoDate() == Version.VersionUpToDate.No)
-					{
-						info += "\n\nA newer version is available for download";
-					}
-					else
-					{
-						info += "\n\nYou have the most current version.";
-					}
 					JOptionPane.showMessageDialog(ShipCreatorFrame.this, info, "About", JOptionPane.INFORMATION_MESSAGE);
 					break;
 				}
@@ -396,7 +386,7 @@ public class ShipCreatorFrame extends JFrame
 				case COPYRIGHT:
 					String copyright = "Battlestations Copyright 2004, 2008 Jeff Siadek and Jason Siadek\n"
 										   + "Battlestations and the Battlestations logo are trademarks owned by Jeff Siadek and Jason Siadek. All rights reserved.\n\n"
-									   + "For more information see: " + "http://www.battlestations.info\n";
+									   + "For more information see: " + "https://www.battlestations.info\n";
 					JOptionPane.showMessageDialog(ShipCreatorFrame.this, copyright, "Copyright Information", JOptionPane.INFORMATION_MESSAGE);
 					break;
 				case PDFOPTIONS:
