@@ -7,38 +7,39 @@ import static com.ericski.Battlestations.RuleSetEnum.Version1;
 import static com.ericski.Battlestations.RuleSetVersion.getInstance;
 import static com.ericski.Battlestations.ShipFactory.INSTANCE;
 import static com.ericski.graphics.BetterImageScaler.getFasterScaledInstance;
-import com.lowagie.text.Document;
-import com.lowagie.text.DocumentException;
-import static com.lowagie.text.Element.ALIGN_CENTER;
-import static com.lowagie.text.Element.ALIGN_LEFT;
-import static com.lowagie.text.Font.BOLD;
-import static com.lowagie.text.Font.BOLDITALIC;
-import static com.lowagie.text.Font.NORMAL;
-import static com.lowagie.text.Font.UNDERLINE;
-import static com.lowagie.text.FontFactory.HELVETICA;
-import static com.lowagie.text.FontFactory.getFont;
-import static com.lowagie.text.Image.MIDDLE;
-import static com.lowagie.text.Image.getInstance;
-import static com.lowagie.text.PageSize.LEGAL;
-import static com.lowagie.text.PageSize.LETTER;
-import com.lowagie.text.Paragraph;
-import com.lowagie.text.Rectangle;
-import static com.lowagie.text.Rectangle.BOTTOM;
-import static com.lowagie.text.Rectangle.BOX;
-import static com.lowagie.text.Rectangle.LEFT;
-import static com.lowagie.text.Rectangle.NO_BORDER;
-import static com.lowagie.text.Rectangle.RIGHT;
-import com.lowagie.text.pdf.PdfPCell;
-import com.lowagie.text.pdf.PdfPTable;
-import com.lowagie.text.pdf.PdfWriter;
-import static com.lowagie.text.pdf.PdfWriter.getInstance;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import static com.itextpdf.text.Element.ALIGN_CENTER;
+import static com.itextpdf.text.Element.ALIGN_LEFT;
+import static com.itextpdf.text.Font.BOLD;
+import static com.itextpdf.text.Font.BOLDITALIC;
+import static com.itextpdf.text.Font.NORMAL;
+import static com.itextpdf.text.Font.UNDERLINE;
+import static com.itextpdf.text.FontFactory.HELVETICA;
+import static com.itextpdf.text.FontFactory.getFont;
+import static com.itextpdf.text.Image.MIDDLE;
+import static com.itextpdf.text.Image.getInstance;
+import static com.itextpdf.text.PageSize.LEGAL;
+import static com.itextpdf.text.PageSize.LETTER;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.Rectangle;
+import static com.itextpdf.text.Rectangle.BOTTOM;
+import static com.itextpdf.text.Rectangle.BOX;
+import static com.itextpdf.text.Rectangle.LEFT;
+import static com.itextpdf.text.Rectangle.NO_BORDER;
+import static com.itextpdf.text.Rectangle.RIGHT;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
+import static com.itextpdf.text.pdf.PdfWriter.getInstance;
+import com.itextpdf.text.BaseColor;
+import static com.itextpdf.text.BaseColor.BLACK;
+import static com.itextpdf.text.BaseColor.BLUE;
+import static com.itextpdf.text.BaseColor.CYAN;
+import static com.itextpdf.text.BaseColor.GRAY;
+import static com.itextpdf.text.BaseColor.MAGENTA;
+import static com.itextpdf.text.BaseColor.WHITE;
 import java.awt.Color;
-import static java.awt.Color.BLACK;
-import static java.awt.Color.BLUE;
-import static java.awt.Color.CYAN;
-import static java.awt.Color.GRAY;
-import static java.awt.Color.MAGENTA;
-import static java.awt.Color.WHITE;
 import static java.awt.RenderingHints.VALUE_INTERPOLATION_BICUBIC;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
@@ -186,7 +187,7 @@ public class PDFShipWriter
 
 					if (logoImage != null)
 					{
-						com.lowagie.text.Image logoPdfImage = getInstance(logoImage, null);
+						com.itextpdf.text.Image logoPdfImage = getInstance(logoImage, null);
 						logoPdfImage.scalePercent(12f);
 						cell = new PdfPCell(logoPdfImage);
 						cell.setBorder(NO_BORDER);
@@ -202,7 +203,7 @@ public class PDFShipWriter
 						document.add(p);
 					}
 
-					com.lowagie.text.Image shipPdfImage = getInstance(scaledShipImage, null);
+					com.itextpdf.text.Image shipPdfImage = getInstance(scaledShipImage, null);
 
 					shipPdfImage.scaleAbsolute(imageSize, imageSize);
 					shipPdfImage.setAlignment(MIDDLE);
@@ -214,7 +215,7 @@ public class PDFShipWriter
 
 					if (options.isShowSpeed())
 					{
-						Color speedColor = CYAN.brighter().brighter();
+						BaseColor speedColor = new BaseColor(java.awt.Color.CYAN.brighter().brighter().getRGB());
 						table = new PdfPTable(13);
 						table.setWidthPercentage(100);
 						p = new Paragraph("Speed", getFont(HELVETICA, 10, NORMAL,
@@ -297,7 +298,7 @@ public class PDFShipWriter
 						table = new PdfPTable(13);
 						table.setWidthPercentage(100);
 						p = new Paragraph("Helm Power", getFont(HELVETICA, 10, NORMAL,
-																Piloting.getColor()));
+																new BaseColor(Piloting.getColor().getRGB())));
 						p.setAlignment(ALIGN_CENTER);
 						cell = new PdfPCell(p);
 						cell.setColspan(2);
@@ -323,7 +324,7 @@ public class PDFShipWriter
 								cell = new PdfPCell(p);
 								cell.setHorizontalAlignment(ALIGN_LEFT);
 								cell
-									.setBackgroundColor(Piloting.getColor());
+									.setBackgroundColor(new BaseColor(Piloting.getColor().getRGB()));
 								cell
 									.setHorizontalAlignment(ALIGN_CENTER);
 								cell.setBorder(BOX);
@@ -340,7 +341,7 @@ public class PDFShipWriter
 						table = new PdfPTable(13);
 						table.setWidthPercentage(100);
 						p = new Paragraph("Gun Power", getFont(HELVETICA, 10, NORMAL,
-															   Combat.getColor()));
+															   new BaseColor(Combat.getColor().getRGB())));
 						p.setAlignment(ALIGN_CENTER);
 						cell = new PdfPCell(p);
 						cell.setColspan(2);
@@ -366,7 +367,7 @@ public class PDFShipWriter
 								cell = new PdfPCell(p);
 								cell.setHorizontalAlignment(ALIGN_LEFT);
 								cell
-									.setBackgroundColor(Combat.getColor());
+									.setBackgroundColor(new BaseColor(Combat.getColor().getRGB()));
 								cell
 									.setHorizontalAlignment(ALIGN_CENTER);
 								cell.setBorder(BOX);
@@ -383,7 +384,7 @@ public class PDFShipWriter
 						table = new PdfPTable(13);
 						table.setWidthPercentage(100);
 						p = new Paragraph("Shield Power", getFont(HELVETICA, 10, NORMAL,
-																  Science.getColor()));
+																  new BaseColor(Science.getColor().getRGB())));
 						p.setAlignment(ALIGN_CENTER);
 						cell = new PdfPCell(p);
 						cell.setColspan(2);
@@ -403,7 +404,7 @@ public class PDFShipWriter
 									p.setAlignment(ALIGN_CENTER);
 									cell = new PdfPCell(p);
 									cell
-										.setBackgroundColor(Science.getColor());
+										.setBackgroundColor(new BaseColor(Science.getColor().getRGB()));
 									cell
 										.setHorizontalAlignment(ALIGN_CENTER);
 									cell.setBorder(BOX);
@@ -434,7 +435,7 @@ public class PDFShipWriter
 								p.setAlignment(ALIGN_CENTER);
 								cell = new PdfPCell(p);
 								cell
-									.setBackgroundColor(Science.getColor());
+									.setBackgroundColor(new BaseColor(Science.getColor().getRGB()));
 								cell
 									.setHorizontalAlignment(ALIGN_CENTER);
 								cell.setBorder(BOX);
@@ -762,7 +763,7 @@ public class PDFShipWriter
 
 			if (logoImage != null)
 			{
-				com.lowagie.text.Image logoPdfImage = getInstance(logoImage, null);
+				com.itextpdf.text.Image logoPdfImage = getInstance(logoImage, null);
 				logoPdfImage.scalePercent(12f);
 				cell = new PdfPCell(logoPdfImage);
 				cell.setBorder(NO_BORDER);
@@ -778,7 +779,7 @@ public class PDFShipWriter
 				document.add(p);
 			}
 
-			com.lowagie.text.Image shipPdfImage = getInstance(scaledShipImage, null);
+			com.itextpdf.text.Image shipPdfImage = getInstance(scaledShipImage, null);
 
 			shipPdfImage.scaleAbsolute(imageSize, imageSize);
 			shipPdfImage.setAlignment(MIDDLE);
@@ -790,7 +791,7 @@ public class PDFShipWriter
 
 			if (options.isShowSpeed())
 			{
-				Color speedColor = CYAN.brighter().brighter();
+				BaseColor speedColor = new BaseColor(java.awt.Color.CYAN.brighter().brighter().getRGB());
 				table = new PdfPTable(13);
 				table.setWidthPercentage(100);
 				p = new Paragraph("Speed", getFont(HELVETICA, 10, NORMAL, speedColor));
@@ -872,7 +873,7 @@ public class PDFShipWriter
 				table = new PdfPTable(13);
 				table.setWidthPercentage(100);
 				p = new Paragraph("Helm Power", getFont(HELVETICA, 10, NORMAL,
-														Piloting.getColor()));
+														new BaseColor(Piloting.getColor().getRGB())));
 				p.setAlignment(ALIGN_CENTER);
 				cell = new PdfPCell(p);
 				cell.setColspan(2);
@@ -895,7 +896,7 @@ public class PDFShipWriter
 						p.setAlignment(ALIGN_CENTER);
 						cell = new PdfPCell(p);
 						cell.setHorizontalAlignment(ALIGN_LEFT);
-						cell.setBackgroundColor(Piloting.getColor());
+						cell.setBackgroundColor(new BaseColor(Piloting.getColor().getRGB()));
 						cell.setHorizontalAlignment(ALIGN_CENTER);
 						cell.setBorder(BOX);
 					}
@@ -911,7 +912,7 @@ public class PDFShipWriter
 				table = new PdfPTable(13);
 				table.setWidthPercentage(100);
 				p = new Paragraph("Gun Power", getFont(HELVETICA, 10, NORMAL,
-													   Combat.getColor()));
+													   new BaseColor(Combat.getColor().getRGB())));
 				p.setAlignment(ALIGN_CENTER);
 				cell = new PdfPCell(p);
 				cell.setColspan(2);
@@ -934,7 +935,7 @@ public class PDFShipWriter
 						p.setAlignment(ALIGN_CENTER);
 						cell = new PdfPCell(p);
 						cell.setHorizontalAlignment(ALIGN_LEFT);
-						cell.setBackgroundColor(Combat.getColor());
+						cell.setBackgroundColor(new BaseColor(Combat.getColor().getRGB()));
 						cell.setHorizontalAlignment(ALIGN_CENTER);
 						cell.setBorder(BOX);
 					}
@@ -950,7 +951,7 @@ public class PDFShipWriter
 				table = new PdfPTable(13);
 				table.setWidthPercentage(100);
 				p = new Paragraph("Shield Power", getFont(HELVETICA, 10, NORMAL,
-														  Science.getColor()));
+														  new BaseColor(Science.getColor().getRGB())));
 				p.setAlignment(ALIGN_CENTER);
 				cell = new PdfPCell(p);
 				cell.setColspan(2);
@@ -971,7 +972,7 @@ public class PDFShipWriter
 							p.setAlignment(ALIGN_CENTER);
 							cell = new PdfPCell(p);
 							cell
-								.setBackgroundColor(Science.getColor());
+								.setBackgroundColor(new BaseColor(Science.getColor().getRGB()));
 							cell.setHorizontalAlignment(ALIGN_CENTER);
 							cell.setBorder(BOX);
 						}
@@ -998,7 +999,7 @@ public class PDFShipWriter
 						p.setAlignment(ALIGN_CENTER);
 						cell = new PdfPCell(p);
 						cell
-							.setBackgroundColor(Science.getColor());
+							.setBackgroundColor(new BaseColor(Science.getColor().getRGB()));
 						cell.setHorizontalAlignment(ALIGN_CENTER);
 						cell.setBorder(BOX);
 					}
