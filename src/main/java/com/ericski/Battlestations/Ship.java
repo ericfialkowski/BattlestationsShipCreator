@@ -36,14 +36,20 @@ import java.util.Map;
 import java.util.Map.Entry;
 import static org.apache.logging.log4j.LogManager.getLogger;
 import org.apache.logging.log4j.Logger;
-import org.jdom2.Document;
-import org.jdom2.Element;
-import org.jdom2.JDOMException;
-import org.jdom2.input.SAXBuilder;
-import org.jdom2.output.Format;
-import static org.jdom2.output.Format.TextMode.TRIM;
-import static org.jdom2.output.Format.getPrettyFormat;
-import org.jdom2.output.XMLOutputter;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 public final class Ship implements Comparable<Ship>
 {
@@ -215,70 +221,91 @@ public final class Ship implements Comparable<Ship>
 
 	public Document toDocument()
 	{
-		Element shipElement = new Element("Ship");
-		Document shipDocument = new Document(shipElement);
-		shipElement.setAttribute("name", name);
-		shipElement.setAttribute("species", species);
-		shipElement.setAttribute("size", Integer.toString(size));
-		shipElement.setAttribute("damageSize", Integer.toString(damageSize));
-
-		if (notes != null && notes.size() > 0)
+		try
 		{
-			Element notesElement = new Element("Notes");
-			int i = 0;
-			if (notes != null)
+			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder builder = factory.newDocumentBuilder();
+			Document shipDocument = builder.newDocument();
+
+			Element shipElement = shipDocument.createElement("Ship");
+			shipDocument.appendChild(shipElement);
+			shipElement.setAttribute("name", name);
+			shipElement.setAttribute("species", species);
+			shipElement.setAttribute("size", Integer.toString(size));
+			shipElement.setAttribute("damageSize", Integer.toString(damageSize));
+
+			if (notes != null && notes.size() > 0)
 			{
+				Element notesElement = shipDocument.createElement("Notes");
+				int i = 0;
 				for (String note : notes)
 				{
-					Element noteElement = new Element("Note");
+					Element noteElement = shipDocument.createElement("Note");
 					noteElement.setAttribute("ndx", Integer.toString(i++));
-					noteElement.setText(note);
-					notesElement.addContent(noteElement);
+					noteElement.setTextContent(note);
+					notesElement.appendChild(noteElement);
 				}
+				shipElement.appendChild(notesElement);
 			}
-			shipElement.addContent(notesElement);
-		}
 
-		Element modulesElement = new Element("Modules");
-		shipElement.addContent(modulesElement);
-		for (Entry<Integer, Module> entry : modules.entrySet())
-		{
-			Element moduleElement = new Element("Module");
-			moduleElement.setAttribute("name", entry.getValue().getName());
-			moduleElement.setAttribute("rotation", Integer.toString(entry.getValue().getRotation()));
-			moduleElement.setAttribute("location", entry.getKey().toString());
-			if (entry.getValue().isUpgraded())
+			Element modulesElement = shipDocument.createElement("Modules");
+			shipElement.appendChild(modulesElement);
+			for (Entry<Integer, Module> entry : modules.entrySet())
 			{
-				moduleElement.setAttribute("upgraded", entry.getValue().isUpgraded() ? "T" : "F");
+				Element moduleElement = shipDocument.createElement("Module");
+				moduleElement.setAttribute("name", entry.getValue().getName());
+				moduleElement.setAttribute("rotation", Integer.toString(entry.getValue().getRotation()));
+				moduleElement.setAttribute("location", entry.getKey().toString());
+				if (entry.getValue().isUpgraded())
+				{
+					moduleElement.setAttribute("upgraded", entry.getValue().isUpgraded() ? "T" : "F");
+				}
+				modulesElement.appendChild(moduleElement);
 			}
-			modulesElement.addContent(moduleElement);
+			return shipDocument;
 		}
-		return shipDocument;
+		catch (ParserConfigurationException e)
+		{
+			logger.error("Couldn't create XML document", e);
+			return null;
+		}
 	}
 
 	public String toXML()
 	{
-		XMLOutputter outputer = new XMLOutputter();
-		Format format = getPrettyFormat().setIndent("\t");
-		format.setTextMode(TRIM);
-		outputer.setFormat(format);
-		return outputer.outputString(toDocument());
+		try
+		{
+			Document doc = toDocument();
+			if (doc == null)
+			{
+				return "";
+			}
+			TransformerFactory transformerFactory = TransformerFactory.newInstance();
+			Transformer transformer = transformerFactory.newTransformer();
+			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+			transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
+			java.io.StringWriter writer = new java.io.StringWriter();
+			transformer.transform(new DOMSource(doc), new StreamResult(writer));
+			return writer.toString();
+		}
+		catch (TransformerException e)
+		{
+			logger.error("Couldn't serialize XML", e);
+			return "";
+		}
 	}
 
 	public static Ship fromXML(String xml)
 	{
-		SAXBuilder builder = new SAXBuilder();
-		StringReader sr = new StringReader(xml);
 		try
 		{
-			//builder.setValidation(true);
-			builder.setIgnoringElementContentWhitespace(true);
-			//builder.setIgnoringBoundaryWhitespace(true);
-			Document shipDocument = builder.build(sr);
-			Element shipElement = shipDocument.getRootElement();
+			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder builder = factory.newDocumentBuilder();
+			Document shipDocument = builder.parse(new InputSource(new StringReader(xml)));
+			Element shipElement = shipDocument.getDocumentElement();
 			return fromXML(shipElement);
 		}
-		catch (JDOMException | IOException e)
+		catch (ParserConfigurationException | SAXException | IOException e)
 		{
 			logger.error("Couldn't deserialize xml into a Ship object", e);
 		}
@@ -289,17 +316,18 @@ public final class Ship implements Comparable<Ship>
 	public static Ship fromXML(Element shipElement)
 	{
 		Ship ship = new Ship();
-		ship.setName(shipElement.getAttributeValue("name"));
-		ship.setSpecies(shipElement.getAttributeValue("species"));
-		String sizeString = shipElement.getAttributeValue("size");
-		Element notesElement = shipElement.getChild("Notes");
-		if (notesElement != null)
+		ship.setName(shipElement.getAttribute("name"));
+		ship.setSpecies(shipElement.getAttribute("species"));
+		String sizeString = shipElement.getAttribute("size");
+		NodeList notesElements = shipElement.getElementsByTagName("Notes");
+		if (notesElements.getLength() > 0)
 		{
-			Object notesArray[] = notesElement.getChildren("Note").toArray();
-			for (Object noteObj : notesArray)
+			Element notesElement = (Element) notesElements.item(0);
+			NodeList noteNodes = notesElement.getElementsByTagName("Note");
+			for (int i = 0; i < noteNodes.getLength(); i++)
 			{
-				Element noteElem = (Element) noteObj;
-				String note = noteElem.getTextNormalize();
+				Element noteElem = (Element) noteNodes.item(i);
+				String note = noteElem.getTextContent().trim();
 				ship.addNote(note);
 			}
 		}
@@ -311,7 +339,7 @@ public final class Ship implements Comparable<Ship>
 		catch (NumberFormatException iggy)
 		{
 		}
-		sizeString = shipElement.getAttributeValue("damageSize");
+		sizeString = shipElement.getAttribute("damageSize");
 		try
 		{
 			ship.setDamageSize(parseInt(sizeString));
@@ -325,54 +353,58 @@ public final class Ship implements Comparable<Ship>
 			logger.trace("Ship: " + ship.toString());
 		}
 
-		Element modulesElement = shipElement.getChild("Modules");
-		Object array[] = modulesElement.getChildren("Module").toArray();
-		for (Object obj : array)
+		NodeList modulesElements = shipElement.getElementsByTagName("Modules");
+		if (modulesElements.getLength() > 0)
 		{
-			Element moduleElem = (Element) obj;
-			String nameString = moduleElem.getAttributeValue("name");
-			String rotationString = moduleElem.getAttributeValue("rotation");
-			String locationString = moduleElem.getAttributeValue("location");
-			String rowString = moduleElem.getAttributeValue("row");
-			String colString = moduleElem.getAttributeValue("col");
-			String upgradedString = moduleElem.getAttributeValue("upgraded");
-
-			if (logger.isTraceEnabled())
+			Element modulesElement = (Element) modulesElements.item(0);
+			NodeList moduleNodes = modulesElement.getElementsByTagName("Module");
+			for (int i = 0; i < moduleNodes.getLength(); i++)
 			{
-				StringBuilder sb = new StringBuilder("Module Data:");
-				sb.append(" name = ").append(nameString);
-				sb.append(" location = ").append(locationString);
-				sb.append(" rotation = ").append(rotationString);
-				sb.append(" upgrade = ").append(upgradedString);
-				logger.trace(sb.toString());
-			}
-
-			try
-			{
-				Module module = INSTANCE.getModuleByName(nameString);
-				if (logger.isTraceEnabled())
-				{
-					logger.trace("Before " + module.toString());
-				}
-				module.setRotation(parseInt(rotationString));
-				module.setUpgraded("T".equals(upgradedString));
+				Element moduleElem = (Element) moduleNodes.item(i);
+				String nameString = moduleElem.getAttribute("name");
+				String rotationString = moduleElem.getAttribute("rotation");
+				String locationString = moduleElem.getAttribute("location");
+				String rowString = moduleElem.getAttribute("row");
+				String colString = moduleElem.getAttribute("col");
+				String upgradedString = moduleElem.getAttribute("upgraded");
 
 				if (logger.isTraceEnabled())
 				{
-					logger.trace("After " + module.toString());
+					StringBuilder sb = new StringBuilder("Module Data:");
+					sb.append(" name = ").append(nameString);
+					sb.append(" location = ").append(locationString);
+					sb.append(" rotation = ").append(rotationString);
+					sb.append(" upgrade = ").append(upgradedString);
+					logger.trace(sb.toString());
 				}
 
-				if (locationString != null && locationString.length() > 0)
+				try
 				{
-					ship.addModule(module, parseInt(locationString));
+					Module module = INSTANCE.getModuleByName(nameString);
+					if (logger.isTraceEnabled())
+					{
+						logger.trace("Before " + module.toString());
+					}
+					module.setRotation(parseInt(rotationString));
+					module.setUpgraded("T".equals(upgradedString));
+
+					if (logger.isTraceEnabled())
+					{
+						logger.trace("After " + module.toString());
+					}
+
+					if (locationString != null && locationString.length() > 0)
+					{
+						ship.addModule(module, parseInt(locationString));
+					}
+					else
+					{
+						ship.addModule(module, parseInt(rowString), parseInt(colString));
+					}
 				}
-				else
+				catch (NumberFormatException iggy)
 				{
-					ship.addModule(module, parseInt(rowString), parseInt(colString));
 				}
-			}
-			catch (NumberFormatException iggy)
-			{
 			}
 		}
 		return ship;
@@ -409,13 +441,14 @@ public final class Ship implements Comparable<Ship>
 		List<Ship> ships = new ArrayList<>();
 		try
 		{
-			SAXBuilder builder = new SAXBuilder();
-			Document shipDocument = builder.build(reader);
-			Element shipsElement = shipDocument.getRootElement();
-			Object array[] = shipsElement.getChildren("Ship").toArray();
-			for (Object obj : array)
+			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder builder = factory.newDocumentBuilder();
+			Document shipDocument = builder.parse(new InputSource(reader));
+			Element shipsElement = shipDocument.getDocumentElement();
+			NodeList shipNodes = shipsElement.getElementsByTagName("Ship");
+			for (int i = 0; i < shipNodes.getLength(); i++)
 			{
-				Element shipElem = (Element) obj;
+				Element shipElem = (Element) shipNodes.item(i);
 				Ship ship = fromXML(shipElem);
 				if (ship != null)
 				{
@@ -424,9 +457,9 @@ public final class Ship implements Comparable<Ship>
 			}
 			reader.close();
 		}
-		catch (IOException | JDOMException ioex)
+		catch (IOException | ParserConfigurationException | SAXException ex)
 		{
-			logger.error("Couldn't read stream into Ship objects", ioex);
+			logger.error("Couldn't read stream into Ship objects", ex);
 		}
 
 		return ships;
